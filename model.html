@@ -45,7 +45,7 @@
         balloonLoader.load('bedroom.gltf', (gltf) => {
             Mesh = gltf.scene;
             Mesh.position.set( 1, 1, 0 );
-            Mesh.scale.set( 0.01, 0.01, 0.01 );
+            Mesh.scale.multiplyScalar(1 / 100); 
             scene.add(Mesh);
             
         });
