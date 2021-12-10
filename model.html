@@ -58,7 +58,7 @@
 	renderer.shadowMapEnabled = true;
 	renderer.shadowMapType = THREE.PCFSoftShadowMap;
 
-	var loader = new THREE.JSONLoader();
+	var loader = new THREE.ObjectLoader();
 	loader.load('https://aperesso.github.io/low_poly_room/room.json', handle_load);
 	function handle_load(geometry,materials) {
 		var obj = new THREE.Mesh(
