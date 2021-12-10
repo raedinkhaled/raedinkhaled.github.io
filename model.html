@@ -25,7 +25,7 @@
 		<div id="container"></div>
 
 		<div id="info">
-			SAKHRI RAEDIN KHALED Groupe 3 IDTW.
+			SAKHRI RAEDIN KHALED Groupe 3 IDTW
 		</div>
 		
 		<div id="webGL-container">
@@ -55,8 +55,8 @@
 	renderer.setPixelRatio(window.devicePixelRatio);
 	renderer.setClearColor(0x141A35);
 	renderer.setSize(window.innerWidth, window.innerHeight);
-	renderer.shadowMapEnabled = true;
-	renderer.shadowMapType = THREE.PCFSoftShadowMap;
+	renderer.shadowMap.enabled = true;
+	renderer.shadowMap.type = THREE.PCFSoftShadowMap;
 
 	var loader = new THREE.ObjectLoader();
 	await loader.loadAsync('https://aperesso.github.io/low_poly_room/room.json', handle_load);
