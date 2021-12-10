@@ -25,7 +25,7 @@
 		<div id="container"></div>
 
 		<div id="info">
-			SAKHRI RAEDIN KHALED Groupe 3 IDTW..
+			SAKHRI RAEDIN KHALED Groupe 3 IDTW...
 		</div>
 		
 		<div id="webGL-container">
@@ -37,6 +37,11 @@
 		
 	import * as THREE from '/three.module.js';
 	let camera;
+	
+	init();
+			render();
+	
+	function init(){
 	
 		const container = document.createElement( 'div' );
 				document.body.appendChild( container );
@@ -94,6 +99,9 @@
 
 	light();
 
+	
+	}
+	
 	function light() {
 
 		var spotlight = new THREE.SpotLight(0xF5FC5A);
@@ -166,6 +174,12 @@
 
 	
 	renderer.render(scene, camera);
+	
+	function render() {
+
+				renderer.render( scene, camera );
+
+			}
 
 	update();
 
