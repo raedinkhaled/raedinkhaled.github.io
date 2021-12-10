@@ -3,7 +3,16 @@
 <head>
     <title>Bedroom Three JS Scene</title>
     <style>
-        body { margin: 0; }
+        
+        body {
+				background-color: #bfe3dd;
+				color: #000;
+            margin: 0;
+			}
+
+			a {
+				color: #2983ff;
+			}
     </style>
 </head>
 <body>
@@ -13,14 +22,14 @@
 <script src="https://cdn.rawgit.com/mrdoob/three.js/master/examples/js/loaders/GLTFLoader.js"></script>
 <script>
     const renderer = new THREE.WebGLRenderer();
-    const camera = new THREE.PerspectiveCamera(50, window.innerWidth / window.innerHeight, 1, 1000);
+    const camera = new THREE.PerspectiveCamera(40, window.innerWidth / window.innerHeight, 1, 100 );
     const scene = new THREE.Scene();
     let Mesh;
     let light;
 
     function init() {
-        scene.background = new THREE.Color('skyblue');
-        camera.position.set(0, 10, 20);
+        scene.background = new THREE.Color(0xbfe3dd);
+        camera.position.set(5, 2, 8);
         renderer.setSize(window.innerWidth, window.innerHeight);
         document.body.appendChild(renderer.domElement);
     }
@@ -35,9 +44,8 @@
 
         balloonLoader.load('bedroom.gltf', (gltf) => {
             Mesh = gltf.scene;
-            Mesh.scale.multiplyScalar(1 / 100);
-            Mesh.position.x = 20;
-            Mesh.gltf.scene.position.z = -20;
+            Mesh.position.set( 1, 1, 0 );
+            Mesh.scale.set( 0.01, 0.01, 0.01 );
             scene.add(Mesh);
             
         });
