@@ -24,98 +24,148 @@
 		<div id="info">
 			SAKHRI RAEDIN KHALED Groupe 3 IDTW
 		</div>
+		
+		div(id='webGL-container')
 
 		<script type="module">
 
-			import * as THREE from '/three.module.js';
+			$(function(){
 
-			import Stats from '/stats.module.js';
+	var scene = new THREE.Scene();
 
-			import { OrbitControls } from '/OrbitControls.js';
-			import { RoomEnvironment } from '/RoomEnvironment.js';
+	var aspect = window.innerWidth / window.innerHeight;
+	var d = 2;
+	camera = new THREE.OrthographicCamera( - d * aspect, d * aspect, d, - d, 1, 1000 );
+	//var camera = new THREE.PerspectiveCamera(75, window.innerWidth / window.innerHeight, 0.1, 500);
 
-			import { GLTFLoader } from '/GLTFLoader.js';
-			import { DRACOLoader } from '/DRACOLoader.js';
+	camera.position.set( 4, 3, 3); // all components equal
+	camera.lookAt( scene.position ); // or the origin
 
-			let mixer;
+	// var axis = new THREE.AxisHelper(10);
+	// scene.add(axis);
 
-			const clock = new THREE.Clock();
-			const container = document.getElementById( 'container' );
+	var renderer = new THREE.WebGLRenderer({antialias: false});
+	renderer.setPixelRatio(window.devicePixelRatio);
+	renderer.setClearColor(0x141A35);
+	renderer.setSize(window.innerWidth, window.innerHeight);
+	renderer.shadowMapEnabled = true;
+	renderer.shadowMapType = THREE.PCFSoftShadowMap;
 
-			const stats = new Stats();
-			container.appendChild( stats.dom );
+	var loader = new THREE.JSONLoader();
+	loader.load('https://aperesso.github.io/low_poly_room/room.json', handle_load);
+	function handle_load(geometry,materials) {
+		var obj = new THREE.Mesh(
+			geometry,
+			materials
+		);
+		obj.receiveShadow = true;
+		obj.castShadow = true;
+		scene.add(obj);
+	}
 
-			const renderer = new THREE.WebGLRenderer( { antialias: true } );
-			renderer.setPixelRatio( window.devicePixelRatio );
-			renderer.setSize( window.innerWidth, window.innerHeight );
-			renderer.outputEncoding = THREE.sRGBEncoding;
-			container.appendChild( renderer.domElement );
+	var screen = new THREE.Mesh(
+		new THREE.PlaneGeometry(.31,.25,.85),
+		new THREE.MeshStandardMaterial({emissive: 0x141A35})
+	);
+	screen.position.set(1.8,.84,1.32);
+	scene.add(screen);
 
-			const pmremGenerator = new THREE.PMREMGenerator( renderer );
+	var snow = [];
+	var nb = 35;
 
-			const scene = new THREE.Scene();
-			scene.background = new THREE.Color( 0xbfe3dd );
-			scene.environment = pmremGenerator.fromScene( new RoomEnvironment(), 0.04 ).texture;
-
-			const camera = new THREE.PerspectiveCamera( 40, window.innerWidth / window.innerHeight, 1, 100 );
-			camera.position.set( 5, 2, 8 );
-
-			const controls = new OrbitControls( camera, renderer.domElement );
-			controls.target.set( 0, 0.5, 0 );
-			controls.update();
-			controls.enablePan = false;
-			controls.enableDamping = true;
-
-			const dracoLoader = new DRACOLoader();
-			dracoLoader.setDecoderPath( 'js/libs/draco/gltf/' );
-
-			const loader = new GLTFLoader();
-			loader.setDRACOLoader( dracoLoader );
-			loader.load( 'bedroom.glb', function ( gltf ) {
-
-				const model = gltf.scene;
-				model.position.set( 1, 1, 0 );
-				model.scale.set( 0.4, 0.4, 0.4 );
-				scene.add( model );
-
-				controls.update();
-
-				stats.update();
-
-				renderer.render( scene, camera );
-
-			}, undefined, function ( e ) {
-
-				console.error( e );
-
-			} );
+	for (var i = 0; i < nb ; i++) {
+		var particle = new Snow();
+		particle.init();
+		particle.modelize();
+		snow.push(particle);
+	}
 
 
-			window.onresize = function () {
 
-				camera.aspect = window.innerWidth / window.innerHeight;
-				camera.updateProjectionMatrix();
+	light();
 
-				renderer.setSize( window.innerWidth, window.innerHeight );
+	function light() {
 
-			};
+		var spotlight = new THREE.SpotLight(0xF5FC5A);
+		spotlight.position.set(1.75, 4, -3);
+		spotlight.castShadow = true;
+		spotlight.intensity = .2;
+		scene.add(spotlight);
+
+		var dirlight = new THREE.DirectionalLight(0xfdd8ff);
+		dirlight.position.set(-.96,3,-.75);
+		//dirlight.castShadow = true;
+		dirlight.intensity = .2;
+		scene.add(dirlight);
+
+		var ambi = new THREE.AmbientLight(0x0e1642);
+		scene.add(ambi);
+
+		var pointlight = new THREE.PointLight();
+		pointlight.position.set(.63,.72,.71);
+		//pointlight.castShadow = true;
+		pointlight.intensity = .2;
+		scene.add(pointlight);
+	}
+
+	function update() {
+		for (var i = 0; i < nb; i++) {
+			snow[i].update();
+		}
+
+		renderer.render(scene,camera);
+		requestAnimationFrame(update);
+	}
 
 
-			function animate() {
+	function Snow() {
+		this.position = new THREE.Vector3();
+		this.vel = new THREE.Vector3(-1 * (0.0005 + Math.random() * 0.001),-1 * (0.005 + Math.random() * 0.01), -.1 * (0.005 + Math.random() * 0.01));
 
-				requestAnimationFrame( animate );
+		this.init = function() {
+			this.position.x = Math.random() * 2.85;
+			this.position.y = 2.6;
+			this.position.z = -2.47 + Math.random() * 2;
+		}
 
-				const delta = clock.getDelta();
+		this.modelize = function() {
+			this.mesh = new THREE.Mesh(
+				new THREE.DodecahedronGeometry(1),
+				new THREE.MeshPhongMaterial({
+					color: 0xfafafa
+				})
+			);
+			this.mesh.position.copy(this.position);
+			this.mesh.scale.set(0.02,0.02,0.02);
+			this.mesh.castShadow = true;
+			this.mesh.receiveShadow = true;
+			scene.add(this.mesh);
+		}
 
-				mixer.update( delta );
+		this.update = function() {
+			if (this.position.y < 0)
+				this.position.y = 2.6;
+			if (this.position.x < 0 || this.position.x > 2.85)
+					this.vel.x *= -1;
+			if (this.position.z < -2.47 || this.position.z > -.47)
+					this.vel.z *= -1;
+			this.position.add(this.vel);
+			this.mesh.position.copy(this.position);
+		}
+	}
 
-				controls.update();
+	$('#webGL-container').append(renderer.domElement);
+	renderer.render(scene, camera);
 
-				stats.update();
+	update();
+})
 
-				renderer.render( scene, camera );
+// particles :
+// y = 2.60
+// x > 0 , x < 2.85
+// z < 0.42 z > -2.47
 
-			}
+
 
 
 		</script>
