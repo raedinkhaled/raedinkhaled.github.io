@@ -71,17 +71,18 @@
 
 			const loader = new GLTFLoader();
 			loader.setDRACOLoader( dracoLoader );
-			loader.load( '/bedroom.gltf', function ( gltf ) {
+			loader.load( 'bedroom.glb', function ( gltf ) {
 
 				const model = gltf.scene;
 				model.position.set( 1, 1, 0 );
 				model.scale.set( 0.01, 0.01, 0.01 );
 				scene.add( model );
 
-				mixer = new THREE.AnimationMixer( model );
-				mixer.clipAction( gltf.animations[ 0 ] ).play();
+				controls.update();
 
-				animate();
+				stats.update();
+
+				renderer.render( scene, camera );
 
 			}, undefined, function ( e ) {
 
