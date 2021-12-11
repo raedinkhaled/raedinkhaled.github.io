@@ -71,7 +71,7 @@
 
 				const model = gltf.scene;
 				model.position.set( 1, 1, 0 );
-				model.scale.set( 0.1, 0.1, 0.1 );
+				model.scale.set( 0.3, 0.3, 0.3 );
 				scene.add( model );
 
 				animate();
@@ -111,6 +111,18 @@
 			function render() {
 
 				renderer.render( scene, camera );
+
+			}
+			
+			
+			function onWindowResize() {
+
+				camera.aspect = window.innerWidth / window.innerHeight;
+				camera.updateProjectionMatrix();
+
+				renderer.setSize( window.innerWidth, window.innerHeight );
+
+				render();
 
 			}
 
