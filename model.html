@@ -70,7 +70,8 @@
 			loader.load( '/room.glb', function ( gltf ) {
 
 				const model = gltf.scene;
-				model.scale.multiplyScalar(1 / 100);
+				model.position.set( 1, 1, 0 );
+				model.scale.set( 0.3, 0.3, 0.3 );
 				model.position.x = 20; // once rescaled, position the model where needed
        				model.position.z = -20;
 				scene.add( model );
