@@ -1,7 +1,7 @@
 <!DOCTYPE html>
 <html lang="en">
 	<head>
-		<title>Bedroom Scene - three.js</title>
+		<title>three.js webgl - animation - keyframes</title>
 		<meta charset="utf-8">
 		<meta name="viewport" content="width=device-width, user-scalable=no, minimum-scale=1.0, maximum-scale=1.0">
 		<link type="text/css" rel="stylesheet" href="main.css">
@@ -15,9 +15,6 @@
 				color: #2983ff;
 			}
 		</style>
-		
-		
-		
 	</head>
 
 	<body>
@@ -25,175 +22,102 @@
 		<div id="container"></div>
 
 		<div id="info">
-			SAKHRI RAEDIN KHALED Groupe 3 IDTW...
+			SAKHRI RAEDIN KHALED GROUPE 03 IDTW
 		</div>
-		
-		<div id="webGL-container">
-		
-		</div>
-		
-<script type="module">
 
-		
-	import * as THREE from '/three.module.js';
-	let camera;
-	
-	init();
-			render();
-	
-	function init(){
-	
-		const container = document.createElement( 'div' );
-				document.body.appendChild( container );
-	
-	var scene = new THREE.Scene();
+		<script type="module">
 
-	var aspect = window.innerWidth / window.innerHeight;
-	var d = 2;
-	camera = new THREE.OrthographicCamera( - d * aspect, d * aspect, d, - d, 1, 1000 );
-	//var camera = new THREE.PerspectiveCamera(75, window.innerWidth / window.innerHeight, 0.1, 500);
+			import * as THREE from '/three.module.js';
 
-	camera.position.set( 4, 3, 3); // all components equal
-	camera.lookAt( scene.position ); // or the origin
+			import Stats from '/stats.module.js';
 
-	// var axis = new THREE.AxisHelper(10);
-	// scene.add(axis);
+			import { OrbitControls } from '/OrbitControls.js';
+			import { RoomEnvironment } from '/RoomEnvironment.js';
 
-	var renderer = new THREE.WebGLRenderer({antialias: false});
-	renderer.setPixelRatio(window.devicePixelRatio);
-	renderer.setClearColor(0x141A35);
-	renderer.setSize(window.innerWidth, window.innerHeight);
-	renderer.shadowMap.enabled = true;
-	renderer.shadowMap.type = THREE.PCFSoftShadowMap;
+			import { GLTFLoader } from '/GLTFLoader.js';
+			import { DRACOLoader } from '/DRACOLoader.js';
 
-	var loader = new THREE.ObjectLoader();
-	await loader.loadAsync('https://aperesso.github.io/low_poly_room/room.json', handle_load);
-	function handle_load(geometry,materials) {
-		var obj = new THREE.Mesh(
-			geometry,
-			materials
-		);
-		obj.receiveShadow = true;
-		obj.castShadow = true;
-		scene.add(obj);
-	}
+			let mixer;
 
-	var screen = new THREE.Mesh(
-		new THREE.PlaneGeometry(.31,.25,.85),
-		new THREE.MeshStandardMaterial({emissive: 0x141A35})
-	);
-	screen.position.set(1.8,.84,1.32);
-	scene.add(screen);
+			const clock = new THREE.Clock();
+			const container = document.getElementById( 'container' );
 
-	var snow = [];
-	var nb = 35;
+			const stats = new Stats();
+			container.appendChild( stats.dom );
 
-	for (var i = 0; i < nb ; i++) {
-		var particle = new Snow();
-		particle.init();
-		particle.modelize();
-		snow.push(particle);
-	}
+			const renderer = new THREE.WebGLRenderer( { antialias: true } );
+			renderer.setPixelRatio( window.devicePixelRatio );
+			renderer.setSize( window.innerWidth, window.innerHeight );
+			renderer.outputEncoding = THREE.sRGBEncoding;
+			container.appendChild( renderer.domElement );
+
+			const pmremGenerator = new THREE.PMREMGenerator( renderer );
+
+			const scene = new THREE.Scene();
+			scene.background = new THREE.Color( 0xbfe3dd );
+			scene.environment = pmremGenerator.fromScene( new RoomEnvironment(), 0.04 ).texture;
+
+			const camera = new THREE.PerspectiveCamera( 40, window.innerWidth / window.innerHeight, 1, 100 );
+			camera.position.set( 5, 2, 8 );
+
+			const controls = new OrbitControls( camera, renderer.domElement );
+			controls.target.set( 0, 0.5, 0 );
+			controls.update();
+			controls.enablePan = false;
+			controls.enableDamping = true;
+
+			const dracoLoader = new DRACOLoader();
+			dracoLoader.setDecoderPath( 'js/libs/draco/gltf/' );
+
+			const loader = new GLTFLoader();
+			loader.setDRACOLoader( dracoLoader );
+			loader.load( '/room.glb', function ( gltf ) {
+
+				const model = gltf.scene;
+				model.position.set( 1, 1, 0 );
+				model.scale.set( 0.4, 0.4, 0.4 );
+				scene.add( model );
+
+				mixer = new THREE.AnimationMixer( model );
+				mixer.clipAction( gltf.animations[ 0 ] ).play();
+
+				animate();
+
+			}, undefined, function ( e ) {
+
+				console.error( e );
+
+			} );
 
 
+			window.onresize = function () {
 
-	light();
+				camera.aspect = window.innerWidth / window.innerHeight;
+				camera.updateProjectionMatrix();
 
-	
-	}
-	
-	function light() {
+				renderer.setSize( window.innerWidth, window.innerHeight );
 
-		var spotlight = new THREE.SpotLight(0xF5FC5A);
-		spotlight.position.set(1.75, 4, -3);
-		spotlight.castShadow = true;
-		spotlight.intensity = .2;
-		scene.add(spotlight);
-
-		var dirlight = new THREE.DirectionalLight(0xfdd8ff);
-		dirlight.position.set(-.96,3,-.75);
-		//dirlight.castShadow = true;
-		dirlight.intensity = .2;
-		scene.add(dirlight);
-
-		var ambi = new THREE.AmbientLight(0x0e1642);
-		scene.add(ambi);
-
-		var pointlight = new THREE.PointLight();
-		pointlight.position.set(.63,.72,.71);
-		//pointlight.castShadow = true;
-		pointlight.intensity = .2;
-		scene.add(pointlight);
-	}
-
-	function update() {
-		for (var i = 0; i < nb; i++) {
-			snow[i].update();
-		}
-
-		renderer.render(scene,camera);
-		requestAnimationFrame(update);
-	}
+			};
 
 
-	function Snow() {
-		this.position = new THREE.Vector3();
-		this.vel = new THREE.Vector3(-1 * (0.0005 + Math.random() * 0.001),-1 * (0.005 + Math.random() * 0.01), -.1 * (0.005 + Math.random() * 0.01));
+			function animate() {
 
-		this.init = function() {
-			this.position.x = Math.random() * 2.85;
-			this.position.y = 2.6;
-			this.position.z = -2.47 + Math.random() * 2;
-		}
+				requestAnimationFrame( animate );
 
-		this.modelize = function() {
-			this.mesh = new THREE.Mesh(
-				new THREE.DodecahedronGeometry(1),
-				new THREE.MeshPhongMaterial({
-					color: 0xfafafa
-				})
-			);
-			this.mesh.position.copy(this.position);
-			this.mesh.scale.set(0.02,0.02,0.02);
-			this.mesh.castShadow = true;
-			this.mesh.receiveShadow = true;
-			scene.add(this.mesh);
-		}
+				const delta = clock.getDelta();
 
-		this.update = function() {
-			if (this.position.y < 0)
-				this.position.y = 2.6;
-			if (this.position.x < 0 || this.position.x > 2.85)
-					this.vel.x *= -1;
-			if (this.position.z < -2.47 || this.position.z > -.47)
-					this.vel.z *= -1;
-			this.position.add(this.vel);
-			this.mesh.position.copy(this.position);
-		}
-	}
+				mixer.update( delta );
 
-	
-	renderer.render(scene, camera);
-	
-	function render() {
+				controls.update();
+
+				stats.update();
 
 				renderer.render( scene, camera );
 
 			}
 
-	update();
-
-
-// particles :
-// y = 2.60
-// x > 0 , x < 2.85
-// z < 0.42 z > -2.47
-
-
-
 
 		</script>
-		
 
 	</body>
 
